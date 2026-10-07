@@ -887,6 +887,21 @@
                 shMesh.position.set(xPos, -1.33, zPos);
                 scene.add(shMesh);
 
+                // Dense cluster of individual colored fallen leaves gathered naturally around each tree base
+                for (let k = 0; k < 20; k++) {
+                    const lMat = leafMaterials[(k + Math.floor(treeSeed)) % leafMaterials.length];
+                    const lMesh = new THREE.Mesh(leafGroundGeo, lMat);
+                    const ang = (k * 137.5 + treeSeed) * (Math.PI / 180);
+                    const dist = 0.40 + Math.sqrt((k + 1) / 20) * 2.10;
+                    const lx = xPos + Math.cos(ang) * dist;
+                    const lz = zPos + Math.sin(ang) * (dist * 0.75);
+                    lMesh.rotation.x = -Math.PI / 2;
+                    lMesh.rotation.z = (k * 43) * (Math.PI / 180);
+                    lMesh.position.set(lx, -1.334, lz);
+                    lMesh.scale.setScalar(0.75 + ((k % 5) * 0.12));
+                    groundLeavesGroup.add(lMesh);
+                }
+
                 const tg = new THREE.Group();
                 // Sunk slightly into ground (-1.58) so trunk root firmly anchors into terrain (-1.36)
                 tg.position.set(xPos, -1.58, zPos);
