@@ -1300,11 +1300,16 @@
         const c4 = createCharacterOnRoad(4, 'assets/couple_4_tight.png?v=500', -129.8, 0.6);
         coupleMeshes.push(c4);
 
-        // Cherry trees placed 4.7 units BEHIND couple at Z = -134.5 (No overlap or Z-fighting)
+        // Cherry trees placed 4.7 units BEHIND couple at Z = -134.5 (Firmly grounded on terrain with shadows)
         [-8.5, 8.5].forEach(xPos => {
             const cherryTree = createBillboard('assets/tree_magenta.png?v=110', 13.5, 14.0);
-            cherryTree.position.set(xPos, 5.66, -134.5);
+            cherryTree.position.set(xPos, 4.66, -134.5);
             multiplaneGroup.add(cherryTree);
+
+            const sh = new THREE.Mesh(new THREE.PlaneGeometry(8.5, 3.8), shadowMat);
+            sh.rotation.x = -Math.PI / 2;
+            sh.position.set(xPos, -1.33, -134.5);
+            multiplaneGroup.add(sh);
         });
 
         // Diorama 4 "Made In Japan": Teahouse & Pagoda framing sides, House4 placed right after DREAMS text (Z = -159.0) with tiny Z gap!
@@ -1419,18 +1424,26 @@
         const c6 = createCharacterOnRoad(6, 'assets/couple_6_v3.png?v=500', -180.7, 0.0);
         coupleMeshes.push(c6);
 
-        // Whitish-pink trees standing UPRIGHT (rotation.z = 0) grounded at LYRICS text position (Z = -178.5, NO floating mid-air trees!)
+        // Whitish-pink trees standing UPRIGHT (rotation.z = 0) firmly grounded on terrain with shadows at Z = -178.5
         const archTreeLeft = createBillboard('assets/tree_bonsai.png?v=110', 13.5, 14.0);
-        archTreeLeft.position.set(-8.5, -1.34 + 7.0, -178.5);
+        archTreeLeft.position.set(-8.5, 4.66, -178.5);
         archTreeLeft.rotation.z = 0; // Standing upright, no leaning!
         if (archTreeLeft.material) archTreeLeft.material.depthWrite = false;
 
         const archTreeRight = createBillboard('assets/tree_bonsai.png?v=110', 13.5, 14.0);
-        archTreeRight.position.set(8.5, -1.34 + 7.0, -178.5);
+        archTreeRight.position.set(8.5, 4.66, -178.5);
         archTreeRight.rotation.z = 0; // Standing upright, no leaning!
         if (archTreeRight.material) archTreeRight.material.depthWrite = false;
 
-        multiplaneGroup.add(archTreeLeft, archTreeRight);
+        const archShadowLeft = new THREE.Mesh(new THREE.PlaneGeometry(8.5, 3.8), shadowMat);
+        archShadowLeft.rotation.x = -Math.PI / 2;
+        archShadowLeft.position.set(-8.5, -1.33, -178.5);
+
+        const archShadowRight = new THREE.Mesh(new THREE.PlaneGeometry(8.5, 3.8), shadowMat);
+        archShadowRight.rotation.x = -Math.PI / 2;
+        archShadowRight.position.set(8.5, -1.33, -178.5);
+
+        multiplaneGroup.add(archTreeLeft, archTreeRight, archShadowLeft, archShadowRight);
 
         // Backdrop Mountain centered right after couple 6 (Z = -181.8)
         const mCenter = createBillboard('assets/ai_ghibli_mountain_1.png?v=101', 48.0, 24.0);
