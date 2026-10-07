@@ -815,14 +815,11 @@
             pinkGoldSilverCubes.push(mesh);
         }
 
-        // --- 7. HIGHWAY TREES: LUSH & CLOSE TO ROAD LIKE EARLIER GENERATION ---
-        // Beautiful close tree canopy lining the highway boulevard (X = 6.8 & 11.6), perfectly clear of road & text!
+        // --- 7. HIGHWAY TREES: LUSH & BEAUTIFULLY ALIGNED CHERRY BLOSSOM BOULEVARD ---
+        // Elegant cherry blossom avenue symmetrically flanking both sides of the highway, firmly grounded on terrain!
         const treeTexPaths = [
             'assets/tree.png',
-            'assets/tree_bonsai.png',
-            'assets/tree_golden.png',
-            'assets/tree_violet.png',
-            'assets/tree_magenta.png'
+            'assets/tree_violet.png'
         ];
         const treeMaterials = treeTexPaths.map(p => {
             const t = textureLoader.load(p);
@@ -847,42 +844,40 @@
                 }
             }
 
-            // Close, lush tree avenue flanking the highway
-            const xInnerBase = isNearStation ? 11.2 : 6.8;
-            const xOuterBase = isNearStation ? 16.2 : 11.6;
+            // Beautiful, perfectly aligned cherry blossom avenue flanking both sides of highway
+            const xBase = isNearStation ? 11.2 : 6.8;
 
             [-1, 1].forEach((side) => {
-                const count = isNearStation ? 1 : 2;
-                [xInnerBase, xOuterBase].slice(0, count).forEach((xBase, r) => {
-                    const s = (r === 0 ? 6.8 : 8.8) + Math.sin(z * 0.35 + r) * 0.7;
-                    const h = s * 1.10;
-                    const xPos = side * (xBase + Math.sin(z * 0.6 + r) * 0.4);
-                    const zPos = z + (Math.cos(z * 0.25) * 1.2);
-                    const treeSeed = Math.abs(Math.sin(z * 12.9898 + side * 78.233 + r * 37.719) * 43758.5453);
-                    const mIdx = Math.floor(treeSeed) % treeMaterials.length;
+                const s = 7.0 + Math.sin(z * 0.35) * 0.6;
+                const h = s * 1.10;
+                const xPos = side * (xBase + Math.sin(z * 0.6) * 0.35);
+                const zPos = z + (Math.cos(z * 0.25) * 1.0);
+                const treeSeed = Math.abs(Math.sin(z * 12.9898 + (side > 0 ? 1 : 2) * 31.415) * 43758.5453);
+                const mIdx = Math.floor(treeSeed) % treeMaterials.length;
 
-                    const shMesh = new THREE.Mesh(new THREE.PlaneGeometry(s * 0.75, s * 0.35), shadowMat);
-                    shMesh.rotation.x = -Math.PI / 2;
-                    shMesh.position.set(xPos, -1.33, zPos);
-                    scene.add(shMesh);
+                // Contact shadow on the ground right beneath the trunk
+                const shMesh = new THREE.Mesh(new THREE.PlaneGeometry(s * 0.65, s * 0.30), shadowMat);
+                shMesh.rotation.x = -Math.PI / 2;
+                shMesh.position.set(xPos, -1.33, zPos);
+                scene.add(shMesh);
 
-                    const tg = new THREE.Group();
-                    tg.position.set(xPos, -1.34, zPos);
-                    tg.userData = { swaySeed: z * 0.2 + side * 1.5 + r };
+                const tg = new THREE.Group();
+                // Sunk slightly into ground (-1.58) so trunk root firmly anchors into terrain (-1.36)
+                tg.position.set(xPos, -1.58, zPos);
+                tg.userData = { swaySeed: z * 0.2 + side * 1.5 };
 
-                    const p1 = new THREE.Mesh(new THREE.PlaneGeometry(s, h), treeMaterials[mIdx]);
-                    p1.position.y = h / 2;
-                    p1.scale.x = (side === -1) ? ((treeSeed % 2 > 1.0) ? 1 : -1) : ((treeSeed % 2 > 1.0) ? -1 : 1);
-                    tg.add(p1);
+                const p1 = new THREE.Mesh(new THREE.PlaneGeometry(s, h), treeMaterials[mIdx]);
+                p1.position.y = h / 2;
+                p1.scale.x = (side === -1) ? 1 : -1;
+                tg.add(p1);
 
-                    const p2 = new THREE.Mesh(new THREE.PlaneGeometry(s, h), treeMaterials[mIdx]);
-                    p2.position.y = h / 2;
-                    p2.rotation.y = -side * (Math.PI / 3);
-                    tg.add(p2);
+                const p2 = new THREE.Mesh(new THREE.PlaneGeometry(s, h), treeMaterials[mIdx]);
+                p2.position.y = h / 2;
+                p2.rotation.y = -side * (Math.PI / 3);
+                tg.add(p2);
 
-                    multiplaneGroup.add(tg);
-                    treeSwayGroups.push(tg);
-                });
+                multiplaneGroup.add(tg);
+                treeSwayGroups.push(tg);
             });
         }
 
