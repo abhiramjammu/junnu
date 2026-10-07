@@ -622,7 +622,7 @@
         });
 
         const leafParticles = [];
-        const LEAF_COUNT = 180;
+        const LEAF_COUNT = 55; // Reduced scattered airborne leaves to keep open spaces clean
         const leafGeo = new THREE.PlaneGeometry(0.55, 0.55);
 
         for (let i = 0; i < LEAF_COUNT; i++) {
@@ -630,7 +630,7 @@
             const mesh = new THREE.Mesh(leafGeo, m);
             const side = Math.random() > 0.5 ? 1 : -1;
             mesh.position.set(
-                side * (3.8 + Math.random() * 16),
+                side * (5.5 + Math.random() * 3.5), // Gently drift through the tree canopy, not scattered in open road
                 Math.random() * 18 + 0.5,
                 (Math.random() - 0.5) * 340 - 100
             );
@@ -830,6 +830,51 @@
         const shadowTex = textureLoader.load('assets/shadow_decal.png');
         const shadowMat = new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, opacity: 0.75, depthWrite: false });
 
+        // Procedural high-resolution fallen sakura petals carpet decal
+        const fallenPetalsTex = (function generateFallenPetalsDecal() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 256;
+            canvas.height = 128;
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, 256, 128);
+
+            const petalColors = [
+                '#ffb7d5', '#ff69b4', '#ff1493', '#f8bbd0', '#ba68c8', '#ffffff'
+            ];
+
+            for (let i = 0; i < 90; i++) {
+                const angle = (i * 137.5) * (Math.PI / 180);
+                const rNorm = Math.sqrt((i + 1) / 90);
+                const rx = rNorm * 112 * (0.68 + Math.sin(i * 3.7) * 0.32);
+                const ry = rNorm * 52 * (0.68 + Math.cos(i * 2.9) * 0.32);
+                const px = 128 + Math.cos(angle) * rx;
+                const py = 64 + Math.sin(angle) * ry;
+
+                ctx.save();
+                ctx.translate(px, py);
+                ctx.rotate((i * 47) * (Math.PI / 180));
+                ctx.fillStyle = petalColors[i % petalColors.length];
+                ctx.globalAlpha = 0.72 + (i % 5) * 0.05;
+
+                const pw = 4.0 + (i % 4) * 1.5;
+                const ph = 7.5 + (i % 4) * 2.5;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, pw, ph, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+
+            const tex = new THREE.CanvasTexture(canvas);
+            tex.minFilter = THREE.LinearFilter;
+            return tex;
+        })();
+        const fallenPetalsMat = new THREE.MeshBasicMaterial({
+            map: fallenPetalsTex,
+            transparent: true,
+            opacity: 0.92,
+            depthWrite: false
+        });
+
         // multiplaneGroup declared at top of scene
 
         const stationZCenters = [-56.7, -83.6, -104.0, -129.8, -156.0, -180.7, -208.0, -234.2];
@@ -860,6 +905,13 @@
                 shMesh.rotation.x = -Math.PI / 2;
                 shMesh.position.set(xPos, -1.33, zPos);
                 scene.add(shMesh);
+
+                // Rich carpet of fallen cherry blossom petals gathered directly under each tree canopy
+                const petalCarpet = new THREE.Mesh(new THREE.PlaneGeometry(s * 0.95, s * 0.48), fallenPetalsMat);
+                petalCarpet.rotation.x = -Math.PI / 2;
+                petalCarpet.rotation.z = Math.sin(z * 1.7 + side) * 0.8;
+                petalCarpet.position.set(xPos, -1.328, zPos);
+                scene.add(petalCarpet);
 
                 const tg = new THREE.Group();
                 // Sunk slightly into ground (-1.58) so trunk root firmly anchors into terrain (-1.36)
@@ -943,12 +995,7 @@
             return mesh;
         }
 
-        // --- ENTRANCE: AUTHENTIC GEMINI-GENERATED TORII ARCH CUTOUT WITH OPEN WALK-THROUGH PORTAL ---
-        // (Removed artificial cylinder pillars as requested!)
-        const toriiArch = createBillboard('assets/torii_arch_clean.png', 16.5, 16.5);
-        toriiArch.position.set(0, 6.9, 6.0);
-        multiplaneGroup.add(toriiArch);
-
+        // --- ENTRANCE LIGHTING ---
         const entLightLeft = new THREE.PointLight(0xffaa00, 2.2, 20);
         entLightLeft.position.set(-4.5, 2.4, 6.0);
         const entLightRight = new THREE.PointLight(0xffaa00, 2.2, 20);
@@ -1045,11 +1092,8 @@
         // =========================================================================
         const coupleMeshes = [];
 
-        // --- ENTRANCE ARCHWAY (Z = 16.0, Right in front of camera at Z=22.0) ---
-        const entranceTorii = createBillboard('assets/torii_arch_clean.png', 22.0, 22.0);
-        entranceTorii.position.set(0.0, 9.5, 16.0);
-        if (entranceTorii.material) entranceTorii.material.depthWrite = false;
-        multiplaneGroup.add(entranceTorii);
+        // --- ENTRANCE ARCHWAY (Removed to keep start view 100% clean and watermark-free) ---
+        const entranceTorii = null;
 
         // --- 3 INTRO FULL SENTENCE PLANES (Large Two-Line Typography, All Visible From Start) ---
         function createFullSentenceTexture(line1, line2) {
